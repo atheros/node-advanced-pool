@@ -1,0 +1,23 @@
+{
+	"name": "advanced-pool",
+	"description": "Advanced resource pool for Node.JS",
+	"version": "0.0.1",
+	"author": {
+	"name": "Przemysław Grzywacz",
+		"email": "nexather@gmail.com"
+	},
+	"keywords": [
+		"pool",
+		"pooling",
+		"throttle"
+	],
+	"main": "lib/advanced-pool.js",
+	"repository": {
+		"type": "git",
+		"url": "http://github.com/atheros/node-advanced-pool.git"
+	},
+	"license": "MIT",
+	"engines": {
+		"node": ">= 0.4.0"
+	}
+}
