@@ -35,7 +35,7 @@ API
 advanced-pool comes with 2 constructors:
 
 	apool.Pool(options)
-	apool.SimpleQueue()
+	apool.SimpleQueue(queueSize)
 
 
 ### Pool(options)
@@ -144,12 +144,13 @@ The pool won't remove objects currently busy and will wait until they get releas
 
 
 
-### SimpleQueue()
+### SimpleQueue(queueSize)
 
 SimpleQueue implements the simplest queue (First-In, First-Out queue) to be used with advanced-pool. The only methods needed are push(), pop() and
 size().
 
-The constructor doesn't accept any arguments
+**Arguments:**
+* _queueSize_ - the maximum size of the queue or 0 for unlimited
 
 
 ### SimpleQueue.push()
