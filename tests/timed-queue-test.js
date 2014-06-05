@@ -129,6 +129,51 @@ module.exports = {
 			assert.equal(pending, max);
 			queue.close();
 		}, 50);
+	},
+	'check default timeout 3': function (beforeExit) {
+		// 10 clients should timeout, 10 clients shouldn't
+		// order of clients is mixed
+		var queue = new advancedPool.TimedQueue({
+			defaultTimeout: 10,
+			checkInterval: 10
+		});
+		var fn;
+		var max = 10;
+		var max2 = 10;
+		var pending = 0;
+
+		for (var i = 0; i < max + max2; i++) {
+			if (i % 2 == 0) {
+				// even - timeout
+				fn = function (err, obj) {
+					pending--;
+				};
+				queue.push(fn);
+			} else {
+				// odd - don't timeout
+				fn = function (err, obj) {
+					pending--;
+					throw new Error("Timed out a non timingout client");
+				};
+				queue.push(fn, 0);
+			}
+			pending++;
+		}
+
+		var checkLoops = 10;
+		var ihandle = setInterval(function () {
+			checkLoops--;
+			if (checkLoops > 0 && pending > max) {
+				// not ready yet, keep checking
+				return;
+			}
+			clearInterval(ihandle);
+
+			assert.notEqual(checkLoops, 0, "Waiting for client timeout timed out!" + "[" + checkLoops + "]");
+			assert.equal(queue.size(), max);
+			assert.equal(pending, max);
+			queue.close();
+		}, 50);
 	}
 };
 
