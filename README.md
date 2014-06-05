@@ -33,12 +33,13 @@ API
 
 ### Exports
 
-	var apool = require('advanced-pool');
+	var advancedPool = require('advanced-pool');
 
-advanced-pool comes with 2 constructors:
+advanced-pool comes with 3 constructors:
 
-	apool.Pool(options)
-	apool.SimpleQueue(queueSize)
+	advancedPool.Pool(options)
+	advancedPool.SimpleQueue(queueSize)
+	advancedPool.TimedQueue(options)
 
 
 ### Pool(options)
@@ -47,21 +48,25 @@ Pool constructor.
 
 Pool accepts a number of options in the _options_ argument:
 
-* *name* - name of the pool (default _pool_)
-* *create* - the object creator function, accepts a single argument, which is a callback function
+* _name_ - name of the pool (default _pool_)
+* _create_ - the object creator function, accepts a single argument, which is a callback function
   The callback function takes two aguments, error and object. If error is set, it is assumed something when wrong,
   and object won't be added to the pool.
-* *destroy* - this function is called to destroy objects in the pool. It takes only one argument, the object (optional)
-* *min* - minimum number of objects in the pool (default _2_)
-* *max* - maximum number of objects in the pool (default _4_)
-* *idleTimeout* - time in milliseconds for an idle object above _min_ to timeout (default _30000_)
-* *idleCheckInterval* - interval in milliseconds for checking for timedout objects (default _1000_)
-* *log* - logging accepts the following values:
-	* *true* - console.log will be used for logging
-	* *function* - a function with 2 arguments, message and severity
-	* *false* and any other value - no logging
+* _destroy_ - this function is called to destroy objects in the pool. It takes only one argument, the object (optional)
+* _min_ - minimum number of objects in the pool (default _2_)
+* _max_ - maximum number of objects in the pool (default _4_)
+* _idleTimeout_ - time in milliseconds for an idle object above _min_ to timeout (default _30000_)
+* _idleCheckInterval_ - interval in milliseconds for checking for timedout objects (default _1000_)
+* _log_ - logging accepts the following values:
+	* _true_ - console.log will be used for logging (default)
+	* _function_ - a function with 2 arguments, message and severity
+	* _false_ and any other value - no logging
 
 More information can be found in the source code.
+
+**Arguments:**
+
+* _options_ Pool options object
 
 
 ### Pool.acquire(client, queueOptions)
@@ -178,4 +183,56 @@ Returns the next client.
 ### SimpleQueue.size()
 
 **Returns:** the number of clients in the queue
+
+
+### SimpleQueue.close()
+
+This allows the queue to cleanup some internal state.
+This method is called from Pool.close().
+
+
+
+
+
+### TimedQueue(queueSize)
+
+TimedQueue implements a FIFO queue (First-In, First-Out queue) with optional timeout.
+
+**Arguments:**
+* _options_ - the maximum size of the queue or 0 for unlimited
+
+TimedQueue _options_:
+* _defaultTimeout_ - Default time a client can be queued in milliseconds or 0 for no limit.
+* _queueSize_ - Maximum queue size. 0 means there is no size limit.
+* _checkInterval_ - How often should the timeouts be checked. By default it is 1/10 of default timeout or 1000ms if timeout is 0.
+
+
+### TimedQueue.push()
+
+Pushes a client to the queue.
+
+**Arguments:**
+
+* _{function}_ _client_ - a callback function with two arguments, error and object.
+* _{Number}_ _timeout_ - queue parameters for this client - SimpleQueue doesn't handle any parameters
+
+**Returns:** nothing
+
+
+### TimedQueue.pop()
+
+Returns the next client.
+
+**Returns:** client callback function
+
+
+### TimedQueue.size()
+
+**Returns:** the number of clients in the queue
+
+
+### TimedQueue.close()
+
+This allows the queue to cleanup some internal state.
+This method is called from Pool.close().
 

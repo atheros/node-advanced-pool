@@ -22,6 +22,7 @@ module.exports = {
 				assert.equal(fn.queueIndex, i);
 			}
 			assert.equal(queue.size(), 0);
+			queue.close();
 		});
 	},
 
@@ -55,6 +56,7 @@ module.exports = {
 				fn = queue.pop();
 			}
 			assert.equal(queue.size(), 0);
+			queue.close();
 		});
 	}
 };
