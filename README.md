@@ -9,6 +9,8 @@ advanced-pool provides a simple and generic ways to manage resource pools in Nod
 Unlike the other pool libraries I found, advanced-pool allows easy extension of both, the pool object as well as
 the container managing the request queue.
 
+Travis-CI status: [![Build Status](https://secure.travis-ci.org/atheros/node-advanced-pool.png)](http://travis-ci.org/atheros/node-advanced-pool)
+
 
 Installation
 ------------
