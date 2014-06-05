@@ -19,5 +19,11 @@
 	"license": "MIT",
 	"engines": {
 		"node": ">= 0.4.0"
+	},
+	"devDependencies": {
+		"expresso": ">0.0.0"
+	},
+	"scripts": {
+		"test": "expresso -I lib tests/*.js"
 	}
 }
