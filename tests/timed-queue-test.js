@@ -56,11 +56,11 @@ module.exports = {
 		assert.equal(queue.size(), 0);
 		queue.close();
 	},
-
 	'check default timeout': function (beforeExit) {
 		// 10 clients should timeout
 		var queue = new advancedPool.TimedQueue({
-			defaultTimeout: 10
+			defaultTimeout: 10,
+			checkInterval: 10
 		});
 		var fn;
 		var max = 10;
@@ -82,18 +82,17 @@ module.exports = {
 				return;
 			}
 			clearInterval(ihandle);
-
-			assert.notEqual(checkLoops, 0, "Waiting for client timeout timed out!");
+			assert.notEqual(checkLoops, 0, "Waiting for client timeout timed out!" + "[" + checkLoops + "]");
 			assert.equal(queue.size(), 0);
 			assert.equal(pending, 0);
 			queue.close();
 		}, 50);
 	},
-
 	'check default timeout 2': function (beforeExit) {
 		// 10 clients should timeout, 10 clients shouldn't
 		var queue = new advancedPool.TimedQueue({
-			defaultTimeout: 10
+			defaultTimeout: 10,
+			checkInterval: 10
 		});
 		var fn;
 		var max = 10;
@@ -125,7 +124,7 @@ module.exports = {
 			}
 			clearInterval(ihandle);
 
-			assert.notEqual(checkLoops, 0, "Waiting for client timeout timed out!");
+			assert.notEqual(checkLoops, 0, "Waiting for client timeout timed out!" + "[" + checkLoops + "]");
 			assert.equal(queue.size(), max);
 			assert.equal(pending, max);
 			queue.close();
