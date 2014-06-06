@@ -19,16 +19,55 @@ Installation
 	npm install advanced-pool
 
 
+Changes
+-------
+
+	0.1.1 - 05.06.2014:
+		- Added .gitignore removing some files fro NPM release
+
+	0.1.0 - 05.06.2014:
+		- Added travis-ci and tests
+		- Added TimedQueue
+		- Added queue size limit
+
+	0.0.1 - 28.11.2012:
+		- Initial release
+
+
 Current state
 -------------
 
-The current version is not proved to be working in any other way than the example in the tests/ directory.
+This package was created to be used in one of my projects. I'll be fixing bugs and add improvements with time.
 
-This package was created to be used in one of my projects, so I'll be fixing bugs and add improvements with time.
+If you find any issues, please report them on GitHub: https://github.com/atheros/node-advanced-pool/issues
 
 
-API
----
+Selecting the appropriate queue class
+-------------------------------------
+
+There are currently two queue classes: _SimpleQueue_ and _TimedQueue_. Choosing the correct queue for your needs is very
+important.
+
+
+### SimpleQueue
+
+SimpleQueue offers only the basics. A FIFO queue with an optional size limit. This sort of queue is lightweight,
+both in memory and CPU usage, but lacks some of the features needed in many applications.
+
+This queue should be used in data processing applications, when clients waiting for resources are not interactive.
+If resources stored within the pool can become unavailable (like database connections), clients requesting then
+will hang forever. In such cases you should use TimedQueue.
+
+
+### TimedQueue
+
+TimedQueue implements a FIFO queue with timeout feature. This is very important for interactive application, where it is
+better to display an error message if resource is not available than to hang for ever. So this is the queue to use to
+pool resources like database connections and sockets in web applications.
+
+
+Pool API
+--------
 
 
 ### Exports
@@ -48,13 +87,15 @@ Pool constructor.
 
 Pool accepts a number of options in the _options_ argument:
 
-* _name_ - name of the pool (default _pool_)
-* _create_ - the object creator function, accepts a single argument, which is a callback function
+* _name_ - Name of the pool, defaults to _pool_.
+* _create_ - The object creator function, accepts a single argument, which is a callback function.
   The callback function takes two aguments, error and object. If error is set, it is assumed something when wrong,
   and object won't be added to the pool.
-* _destroy_ - this function is called to destroy objects in the pool. It takes only one argument, the object (optional)
-* _min_ - minimum number of objects in the pool (default _2_)
-* _max_ - maximum number of objects in the pool (default _4_)
+* _destroy_ - This function is called to destroy objects in the pool. It takes only one argument, the object.
+  This function is optional.
+* _queue_ - Queue object instance to use. If not specified, an instance of _SimpleQueue_ object will be created.
+* _min_ - Minimum number of objects in the pool (default _2_).
+* _max_ - Maximum number of objects in the pool (default _4_). It must be greater or equal than _min_.
 * _idleTimeout_ - time in milliseconds for an idle object above _min_ to timeout (default _30000_)
 * _idleCheckInterval_ - interval in milliseconds for checking for timedout objects (default _1000_)
 * _log_ - logging accepts the following values:
@@ -63,6 +104,15 @@ Pool accepts a number of options in the _options_ argument:
 	* _false_ and any other value - no logging
 
 More information can be found in the source code.
+
+Pool derives from EventEmitter and produce the following events:
+* _create-error_ (errorMessage) - Called when object creation failed.
+* _object-added_ (object) - Called when a new object is added to the pool.
+* _object-error_ (object) - Object is considered bad, it will be removed (object-removed event will be called too).
+* _object-removed_ (object, error) - Object was removed, if it was due to an error, error will be set to true, false if it was due to a timeout.
+* _object-expired_ (object) - Object expired by idleTimeout when pool contained more objects than minimum - will be followed by object-removed event.
+* _pool-closed_ - Called when the close() method is called.
+
 
 **Arguments:**
 
@@ -132,7 +182,7 @@ Changes the limits of the pool.
 
 If there is a need of creating additional objects right away, they will be created during this call.
 
-If the limits lowered, resource objects will only be freed by the idleTimout handler.
+If the limits lowered, resource objects will only be freed by the idleTimeout handler.
 
 **Arguments:**
 
@@ -150,9 +200,7 @@ The pool won't remove objects currently busy and will wait until they get releas
 
 
 
-
-
-### SimpleQueue(queueSize)
+### Queue: SimpleQueue(queueSize)
 
 SimpleQueue implements the simplest queue (First-In, First-Out queue) to be used with advanced-pool. The only methods needed are push(), pop() and
 size().
@@ -161,42 +209,12 @@ size().
 * _queueSize_ - the maximum size of the queue or 0 for unlimited
 
 
-### SimpleQueue.push()
-
-Pushes a client to the queue.
-
-**Arguments:**
-
-* _{function}_ _client_ - a callback function with two arguments, error and object.
-* _queueParams_ - queue parameters for this client - SimpleQueue doesn't handle any parameters
-
-**Returns:** nothing
-
-
-### SimpleQueue.pop()
-
-Returns the next client.
-
-**Returns:** client callback function
-
-
-### SimpleQueue.size()
-
-**Returns:** the number of clients in the queue
-
-
-### SimpleQueue.close()
-
-This allows the queue to cleanup some internal state.
-This method is called from Pool.close().
-
-
-
-
-
-### TimedQueue(queueSize)
+### Queue: TimedQueue(queueSize)
 
 TimedQueue implements a FIFO queue (First-In, First-Out queue) with optional timeout.
+
+When using TimedQueue, the second argument of Pool.acquire() can be the timeout of the client, 0 for no timeout
+or null/undefined to use the default timeout.
 
 **Arguments:**
 * _options_ - the maximum size of the queue or 0 for unlimited
@@ -207,32 +225,40 @@ TimedQueue _options_:
 * _checkInterval_ - How often should the timeouts be checked. By default it is 1/10 of default timeout or 1000ms if timeout is 0.
 
 
-### TimedQueue.push()
+Queue API
+---------
 
-Pushes a client to the queue.
+If none of the queue classes fits your need, you can implement your own.
+Bellow is a description of the required interface.
+
+### queue.push()
+
+Push a client to the queue.
 
 **Arguments:**
 
-* _{function}_ _client_ - a callback function with two arguments, error and object.
-* _{Number}_ _timeout_ - queue parameters for this client - SimpleQueue doesn't handle any parameters
+* _client_ - a callback function with two arguments, error and object.
+* _queueParams_ - Queue parameters for this client. This is the second argument of Pool.acquire() call.
 
 **Returns:** nothing
 
 
-### TimedQueue.pop()
+### queue.pop()
 
 Returns the next client.
 
 **Returns:** client callback function
 
 
-### TimedQueue.size()
+### queue.size()
 
 **Returns:** the number of clients in the queue
 
 
-### TimedQueue.close()
+### queue.close()
 
 This allows the queue to cleanup some internal state.
 This method is called from Pool.close().
+
+
 
