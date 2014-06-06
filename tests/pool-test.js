@@ -178,5 +178,46 @@ module.exports = {
 			assert.equal(createdObjects, maxClients);
 			assert.equal(createdObjects, destroyedObjects);
 		}, 500);
+	},
+	'check close': function (beforeExit) {
+		// make sure that:
+		// - close triggers appropriate errors on clients
+		// - released objects after close are destroyed
+		var max = 5;
+		var acquires = 0;
+		var destroyed = false;
+		var pool = new advancedPool.Pool({
+			min: 1,
+			max: 1,
+			create: function (callback) {
+				callback(null, {});
+			},
+			destroy: function (obj) {
+				destroyed = true;
+			}
+		});
+
+		for (var i = 0; i < max; i++) {
+			pool.acquire(function (err, res) {
+				if (err) {
+					assert.equal(err.name, "CloseError");
+				} else {
+					if (acquires == 0) {
+						acquires = 1;
+						setTimeout(function () {
+							pool.close();
+							pool.release(res);
+						}, 100);
+					} else {
+						throw new Error('Acquired object - unexpected condition');
+					}
+				}
+			});
+		}
+
+		beforeExit(function () {
+			assert.equal(destroyed, true, "Object left behind");
+		})
+
 	}
 };

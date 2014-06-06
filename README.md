@@ -131,6 +131,11 @@ Acquire an object from the pool.
 An object received in _client_ callback should either be released with the _release()_ method or marked as bad
 object with _removeBadObject()_ method.
 
+Client can receive the following errors: (Error.name property)
+
+- _TimeoutError_ when the request times out.
+- _OverflowError_ when the request queue gets filled.
+- _CloseError_ when the pool gets closed.
 
 **Example:**
 
