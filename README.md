@@ -22,13 +22,18 @@ Installation
 Changes
 -------
 
+	0.2.0 - 07.06.2014:
+		- Reworked error handling.
+		- Improved documentation.
+		- Acquire callbacks are always called asynchronously.
+
 	0.1.1 - 05.06.2014:
-		- Added .gitignore removing some files fro NPM release
+		- Added .gitignore removing some files fro NPM release.
 
 	0.1.0 - 05.06.2014:
-		- Added travis-ci and tests
-		- Added TimedQueue
-		- Added queue size limit
+		- Added travis-ci and tests.
+		- Added TimedQueue.
+		- Added queue size limit.
 
 	0.0.1 - 28.11.2012:
 		- Initial release
@@ -45,8 +50,9 @@ If you find any issues, please report them on GitHub: https://github.com/atheros
 Selecting the appropriate queue class
 -------------------------------------
 
-There are currently two queue classes: _SimpleQueue_ and _TimedQueue_. Choosing the correct queue for your needs is very
-important.
+Once pool resources runs out, following acquire requests are queued while waiting for resources to get
+released or created. There are currently two queue classes: _SimpleQueue_ and _TimedQueue_.
+Choosing the correct queue for your needs is very important.
 
 
 ### SimpleQueue
@@ -66,9 +72,62 @@ better to display an error message if resource is not available than to hang for
 pool resources like database connections and sockets in web applications.
 
 
+Simple example
+--------------
+
+Example bellow demonstrates how to use the pool. It creates 10 workers trying to get access to limited resources.
+Once all workers received their access to requested resource, the pool is closed.
+
+	var advancedPool = require('advanced-pool');
+	var resources = 0;
+	var finished = 0;
+	var count = 10;
+	var pool = new advancedPool.Pool({
+		min: 3,
+		max: 4,
+		create: function (callback) {
+			// create the resource
+			var resource = {name: "Resource #" + resources};
+			console.log("created resource #" + resource.name);
+			callback(null, resource);
+			resources++;
+		}
+	});
+	var i, fn;
+
+	// create some resource requests
+	for (i = 0; i < count; i++) {
+		fn = function (err, resource) {
+			if (err) {
+				// something went wrong
+				console.log(err);
+			} else {
+				// we got our resource!
+				console.log("FN #" + this.id + " got resource: " + resource.name);
+				setTimeout(function () {
+					// release it after some time
+					pool.release(resource);
+					finished++;
+				}, 10);
+			}
+		};
+		// request resource
+		// the bind part is there only to get an ID of the request and is optional
+		pool.acquire(fn.bind({ id: i }));
+	}
+
+	// wait for all requests to complete
+	var interval = setInterval(function () {
+		if (finished == count) {
+			console.log('All workers finished, closing pool');
+			pool.close();
+			clearInterval(interval);
+		}
+	}, 100);
+
+
 Pool API
 --------
-
 
 ### Exports
 
