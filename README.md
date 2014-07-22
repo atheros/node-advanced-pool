@@ -22,6 +22,10 @@ Installation
 Changes
 -------
 
+	0.3.0 - 23.07.2014:
+		- Moved from Expresso to Mocha test framework.
+		- Added acquireThunk() to work with co
+
 	0.2.0 - 07.06.2014:
 		- Reworked error handling.
 		- Improved documentation.
@@ -185,7 +189,7 @@ Acquire an object from the pool.
 **Arguments:**
 
 * _client_ is a function with two arguments, error and object. If _error_ argument is null, the _object_ argument will hold an object from the pool.
-* _queueOptions_ should hold additional arguments for the queue, however _SimpleQueue_ doesn't require any arguments.
+* _queueOptions_ should hold additional arguments for the queue, however _SimpleQueue_ doesn't require any arguments (optional).
 
 An object received in _client_ callback should either be released with the _release()_ method or marked as bad
 object with _removeBadObject()_ method.
@@ -207,6 +211,23 @@ Client can receive the following errors: (Error.name property)
 		}
 	});
 
+### Pool.acquireThunk(queueOptions)
+
+Acquire an object from the pool using thunk.
+
+**Arguments**
+* _queueOptions_ should hold additional arguments for the queue, however _SimpleQueue_ doesn't require any arguments (optional).
+
+The behavior of this method is similar to Pool.acquire() with different asynchronous model. This method works with co (https://github.com/visionmedia/co).
+
+This method only works with ES6 generators. That means nodejs version 0.11.0 or newer is needed, called with --harmony or --harmony-generators switch.
+
+**Example**
+
+	co(function *() {
+		db = yield pool.acquireThunk();
+		yield db.insert({name: "Object"});
+	})();
 
 ### Pool.release(object)
 
