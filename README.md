@@ -22,6 +22,9 @@ Installation
 Changes
 -------
 
+	0.3.1 - 23.07.2014:
+		- Removed some old (and not existing) reference from testing code.
+
 	0.3.0 - 23.07.2014:
 		- Moved from Expresso to Mocha test framework.
 		- Added acquireThunk() to work with co

@@ -1,7 +1,7 @@
 {
 	"name": "advanced-pool",
 	"description": "Advanced resource pool for Node.JS",
-	"version": "0.3.0",
+	"version": "0.3.1",
 	"author": {
 	"name": "Przemysław Grzywacz",
 		"email": "nexather@gmail.com"

@@ -1,7 +1,6 @@
 var assert     = require('assert');
 var advancedPool = require('..');
-var co = require('co');
-var compareVersion = require('compare-version');
+//var co = require('co');
 
 describe('Pool', function () {
 	describe('basics', function () {
