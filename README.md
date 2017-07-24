@@ -22,6 +22,9 @@ Installation
 Changes
 -------
 
+    0.3.3 - 24.07.2017:
+        - Fixed bug: Support min pool size of 0 in constructor (thanks petrsloup).
+
     0.3.2 - 04.05.2016:
         - Fixed bug in object creation.
 
